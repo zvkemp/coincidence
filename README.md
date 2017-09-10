@@ -46,12 +46,12 @@ puts ">>>>>>>>>>>>>>>>>>>> DONE ENQUEUEING WORK"
 ```
 
 What will happen:
-1. The work should enqueue immediately into the producer (since its queue is set up with no backpressure, it shouldn't block the main thread)
-1. The intermediate stage (`quick_doubler`) will start consuming events out of the producer, and will accept a maximum of 5 into its inbox.
-1. `quick_doublers` thread pool will begin working on these events (there's a small `sleep` here to simulate work), and then:
-  - pop the result into the outbox, if the outbox has space
-  - if the outbox is full, it waits until the next stage has drained at least one event. This waiting behavior will echo back through the pipeline, meaning the fetcher will also stop requesting new events from the producer. Since we configured this producer-consumer with a pool size of three, and pressure of 5, at any given time there will be a maximum of 5 events in the inbox waiting to be processed, 3 processing events in the thread pool, and 5 processed events in the outbox.
-1. The final consumer will read from the producer-consumer, also with backpressure (this step has been configured to simulate slower work).
+- The work should enqueue immediately into the producer (since its queue is set up with no backpressure, it shouldn't block the main thread)
+- The intermediate stage (`quick_doubler`) will start consuming events out of the producer, and will accept a maximum of 5 into its inbox.
+- `quick_doublers` thread pool will begin working on these events (there's a small `sleep` here to simulate work), and then:
+    - push the result into the outbox, if the outbox has space
+    - if the outbox is full, it waits until the next stage has drained at least one event. This waiting behavior will echo back through the pipeline, meaning the fetcher will also stop requesting new events from the producer. Since we configured this producer-consumer with a pool size of three, and pressure of 5, at any given time there will be a maximum of 5 events in the inbox waiting to be processed, 3 processing events in the thread pool, and 5 processed events in the outbox.
+- The final consumer will read from the producer-consumer, also with backpressure (this step has been configured to simulate slower work).
 
 Implementation Characteristics:
 
